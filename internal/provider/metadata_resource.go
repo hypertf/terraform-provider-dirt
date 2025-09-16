@@ -168,10 +168,10 @@ func (r *MetadataResource) Update(ctx context.Context, req resource.UpdateReques
 
 	// Update the metadata
 	updateReq := client.UpdateMetadataRequest{}
-	
+
 	path := data.Path.ValueString()
 	updateReq.Path = &path
-	
+
 	value := data.Value.ValueString()
 	updateReq.Value = &value
 

@@ -213,19 +213,19 @@ func (r *InstanceResource) Update(ctx context.Context, req resource.UpdateReques
 
 	// Update the instance
 	updateReq := client.UpdateInstanceRequest{}
-	
+
 	name := data.Name.ValueString()
 	updateReq.Name = &name
-	
+
 	cpu := int(data.CPU.ValueInt64())
 	updateReq.CPU = &cpu
-	
+
 	memoryMB := int(data.MemoryMB.ValueInt64())
 	updateReq.MemoryMB = &memoryMB
-	
+
 	image := data.Image.ValueString()
 	updateReq.Image = &image
-	
+
 	status := data.Status.ValueString()
 	updateReq.Status = &status
 

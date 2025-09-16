@@ -10,18 +10,17 @@ import (
 	"net/url"
 	"os"
 
-
 	"time"
 )
 
-// Client represents the DirtCloud API client
+// Client represents the DirtCloud API client.
 type Client struct {
 	BaseURL    string
 	HTTPClient *http.Client
 	Token      string
 }
 
-// NewClient creates a new DirtCloud API client
+// NewClient creates a new DirtCloud API client.
 func NewClient(baseURL string) *Client {
 	if baseURL == "" {
 		baseURL = "http://localhost:8080/v1"
@@ -38,7 +37,7 @@ func NewClient(baseURL string) *Client {
 	}
 }
 
-// Project represents a DirtCloud project
+// Project represents a DirtCloud project.
 type Project struct {
 	ID        string    `json:"id"`
 	Name      string    `json:"name"`
@@ -46,17 +45,17 @@ type Project struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-// CreateProjectRequest represents the request body for creating a project
+// CreateProjectRequest represents the request body for creating a project.
 type CreateProjectRequest struct {
 	Name string `json:"name"`
 }
 
-// UpdateProjectRequest represents the request body for updating a project
+// UpdateProjectRequest represents the request body for updating a project.
 type UpdateProjectRequest struct {
 	Name string `json:"name"`
 }
 
-// Instance represents a DirtCloud instance
+// Instance represents a DirtCloud instance.
 type Instance struct {
 	ID        string    `json:"id"`
 	ProjectID string    `json:"project_id"`
@@ -69,7 +68,7 @@ type Instance struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-// CreateInstanceRequest represents the request body for creating an instance
+// CreateInstanceRequest represents the request body for creating an instance.
 type CreateInstanceRequest struct {
 	ProjectID string `json:"project_id"`
 	Name      string `json:"name"`
@@ -79,7 +78,7 @@ type CreateInstanceRequest struct {
 	Status    string `json:"status,omitempty"`
 }
 
-// UpdateInstanceRequest represents the request body for updating an instance
+// UpdateInstanceRequest represents the request body for updating an instance.
 type UpdateInstanceRequest struct {
 	Name     *string `json:"name,omitempty"`
 	CPU      *int    `json:"cpu,omitempty"`
@@ -88,7 +87,7 @@ type UpdateInstanceRequest struct {
 	Status   *string `json:"status,omitempty"`
 }
 
-// Metadata represents DirtCloud metadata
+// Metadata represents DirtCloud metadata.
 type Metadata struct {
 	ID        string    `json:"id"`
 	Path      string    `json:"path"`
@@ -97,7 +96,7 @@ type Metadata struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-// doRequest performs an HTTP request with proper authentication
+// doRequest performs an HTTP request with proper authentication.
 func (c *Client) doRequest(ctx context.Context, method, endpoint string, body io.Reader) (*http.Response, error) {
 	fullURL := c.BaseURL + endpoint
 	req, err := http.NewRequestWithContext(ctx, method, fullURL, body)
@@ -123,7 +122,7 @@ func (c *Client) doRequest(ctx context.Context, method, endpoint string, body io
 
 // Projects API
 
-// CreateProject creates a new project
+// CreateProject creates a new project.
 func (c *Client) CreateProject(ctx context.Context, req CreateProjectRequest) (*Project, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
@@ -148,7 +147,7 @@ func (c *Client) CreateProject(ctx context.Context, req CreateProjectRequest) (*
 	return &project, nil
 }
 
-// GetProject retrieves a project by ID
+// GetProject retrieves a project by ID.
 func (c *Client) GetProject(ctx context.Context, id string) (*Project, error) {
 	resp, err := c.doRequest(ctx, "GET", "/projects/"+id, nil)
 	if err != nil {
@@ -172,7 +171,7 @@ func (c *Client) GetProject(ctx context.Context, id string) (*Project, error) {
 	return &project, nil
 }
 
-// ListProjects retrieves all projects, optionally filtered by name
+// ListProjects retrieves all projects, optionally filtered by name.
 func (c *Client) ListProjects(ctx context.Context, nameFilter string) ([]Project, error) {
 	endpoint := "/projects"
 	if nameFilter != "" {
@@ -197,7 +196,7 @@ func (c *Client) ListProjects(ctx context.Context, nameFilter string) ([]Project
 	return projects, nil
 }
 
-// UpdateProject updates a project
+// UpdateProject updates a project.
 func (c *Client) UpdateProject(ctx context.Context, id string, req UpdateProjectRequest) (*Project, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
@@ -226,7 +225,7 @@ func (c *Client) UpdateProject(ctx context.Context, id string, req UpdateProject
 	return &project, nil
 }
 
-// DeleteProject deletes a project
+// DeleteProject deletes a project.
 func (c *Client) DeleteProject(ctx context.Context, id string) error {
 	resp, err := c.doRequest(ctx, "DELETE", "/projects/"+id, nil)
 	if err != nil {
@@ -247,7 +246,7 @@ func (c *Client) DeleteProject(ctx context.Context, id string) error {
 
 // Instances API
 
-// CreateInstance creates a new instance
+// CreateInstance creates a new instance.
 func (c *Client) CreateInstance(ctx context.Context, req CreateInstanceRequest) (*Instance, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
@@ -272,7 +271,7 @@ func (c *Client) CreateInstance(ctx context.Context, req CreateInstanceRequest) 
 	return &instance, nil
 }
 
-// GetInstance retrieves an instance by ID
+// GetInstance retrieves an instance by ID.
 func (c *Client) GetInstance(ctx context.Context, id string) (*Instance, error) {
 	resp, err := c.doRequest(ctx, "GET", "/instances/"+id, nil)
 	if err != nil {
@@ -296,7 +295,7 @@ func (c *Client) GetInstance(ctx context.Context, id string) (*Instance, error) 
 	return &instance, nil
 }
 
-// ListInstances retrieves all instances, optionally filtered
+// ListInstances retrieves all instances, optionally filtered.
 func (c *Client) ListInstances(ctx context.Context, projectID, nameFilter, statusFilter string) ([]Instance, error) {
 	endpoint := "/instances"
 	params := url.Values{}
@@ -333,7 +332,7 @@ func (c *Client) ListInstances(ctx context.Context, projectID, nameFilter, statu
 	return instances, nil
 }
 
-// UpdateInstance updates an instance
+// UpdateInstance updates an instance.
 func (c *Client) UpdateInstance(ctx context.Context, id string, req UpdateInstanceRequest) (*Instance, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
@@ -362,7 +361,7 @@ func (c *Client) UpdateInstance(ctx context.Context, id string, req UpdateInstan
 	return &instance, nil
 }
 
-// DeleteInstance deletes an instance
+// DeleteInstance deletes an instance.
 func (c *Client) DeleteInstance(ctx context.Context, id string) error {
 	resp, err := c.doRequest(ctx, "DELETE", "/instances/"+id, nil)
 	if err != nil {
@@ -383,19 +382,19 @@ func (c *Client) DeleteInstance(ctx context.Context, id string) error {
 
 // Metadata API
 
-// CreateMetadataRequest represents the request body for creating metadata
+// CreateMetadataRequest represents the request body for creating metadata.
 type CreateMetadataRequest struct {
 	Path  string `json:"path"`
 	Value string `json:"value"`
 }
 
-// UpdateMetadataRequest represents the request body for updating metadata
+// UpdateMetadataRequest represents the request body for updating metadata.
 type UpdateMetadataRequest struct {
 	Path  *string `json:"path,omitempty"`
 	Value *string `json:"value,omitempty"`
 }
 
-// CreateMetadata creates new metadata
+// CreateMetadata creates new metadata.
 func (c *Client) CreateMetadata(ctx context.Context, req CreateMetadataRequest) (*Metadata, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
@@ -420,7 +419,7 @@ func (c *Client) CreateMetadata(ctx context.Context, req CreateMetadataRequest) 
 	return &metadata, nil
 }
 
-// GetMetadata retrieves metadata by ID
+// GetMetadata retrieves metadata by ID.
 func (c *Client) GetMetadata(ctx context.Context, id string) (*Metadata, error) {
 	resp, err := c.doRequest(ctx, "GET", "/metadata/"+id, nil)
 	if err != nil {
@@ -444,7 +443,7 @@ func (c *Client) GetMetadata(ctx context.Context, id string) (*Metadata, error) 
 	return &metadata, nil
 }
 
-// GetMetadataByPath retrieves metadata by path
+// GetMetadataByPath retrieves metadata by path.
 func (c *Client) GetMetadataByPath(ctx context.Context, path string) (*Metadata, error) {
 	// Use ListMetadata to find the exact path match
 	metadataList, err := c.ListMetadata(ctx, path)
@@ -462,7 +461,7 @@ func (c *Client) GetMetadataByPath(ctx context.Context, path string) (*Metadata,
 	return nil, fmt.Errorf("metadata not found")
 }
 
-// ListMetadata lists all metadata, optionally filtered by prefix
+// ListMetadata lists all metadata, optionally filtered by prefix.
 func (c *Client) ListMetadata(ctx context.Context, prefix string) ([]Metadata, error) {
 	endpoint := "/metadata"
 	if prefix != "" {
@@ -487,7 +486,7 @@ func (c *Client) ListMetadata(ctx context.Context, prefix string) ([]Metadata, e
 	return metadata, nil
 }
 
-// UpdateMetadata updates metadata by ID
+// UpdateMetadata updates metadata by ID.
 func (c *Client) UpdateMetadata(ctx context.Context, id string, req UpdateMetadataRequest) (*Metadata, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
@@ -516,7 +515,7 @@ func (c *Client) UpdateMetadata(ctx context.Context, id string, req UpdateMetada
 	return &metadata, nil
 }
 
-// DeleteMetadata deletes metadata by ID
+// DeleteMetadata deletes metadata by ID.
 func (c *Client) DeleteMetadata(ctx context.Context, id string) error {
 	resp, err := c.doRequest(ctx, "DELETE", "/metadata/"+id, nil)
 	if err != nil {
