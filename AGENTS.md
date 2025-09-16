@@ -33,6 +33,9 @@ make generate
 # Copy dev overrides for local testing
 cp examples/.terraformrc.bak ~/.terraformrc
 
+# Install golangci-lint v2 (required for v2 configuration)
+curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.4.0
+
 # Build and test changes in examples directory
 cd examples/data-sources/dirt_metadata
 terraform init
