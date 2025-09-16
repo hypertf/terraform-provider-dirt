@@ -1,6 +1,7 @@
 
+version: "2"
+
 linters:
-  disable-all: true
   enable:
     - copyloopvar
     - durationcheck
@@ -16,9 +17,7 @@ linters:
     - unconvert
     - unparam
     - unused
+
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
-  exclude-dirs:
-    - examples
-    - test-published
