@@ -45,11 +45,11 @@ func (d *MetadataDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				MarkdownDescription: "Metadata identifier",
-				Required:            true,
+				Computed:            true,
 			},
 			"path": schema.StringAttribute{
 				MarkdownDescription: "Metadata path identifier",
-				Computed:            true,
+				Required:            true,
 			},
 			"value": schema.StringAttribute{
 				MarkdownDescription: "Metadata value",
@@ -98,7 +98,7 @@ func (d *MetadataDataSource) Read(ctx context.Context, req datasource.ReadReques
 	}
 
 	// Get the metadata from the API
-	metadata, err := d.client.GetMetadata(ctx, data.ID.ValueString())
+	metadata, err := d.client.GetMetadataByPath(ctx, data.Path.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read metadata, got error: %s", err))
 		return

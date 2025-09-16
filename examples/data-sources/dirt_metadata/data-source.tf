@@ -1,9 +1,9 @@
 data "dirt_metadata" "app_config" {
-  id = "metadata-id-12345"
+  path = "app/config/database_url"
 }
 
 data "dirt_metadata" "feature_flag" {
-  id = "metadata-id-67890"
+  path = "app/features/new_ui_enabled"
 }
 
 output "database_url" {

@@ -444,6 +444,24 @@ func (c *Client) GetMetadata(ctx context.Context, id string) (*Metadata, error) 
 	return &metadata, nil
 }
 
+// GetMetadataByPath retrieves metadata by path
+func (c *Client) GetMetadataByPath(ctx context.Context, path string) (*Metadata, error) {
+	// Use ListMetadata to find the exact path match
+	metadataList, err := c.ListMetadata(ctx, path)
+	if err != nil {
+		return nil, err
+	}
+
+	// Find exact match
+	for _, metadata := range metadataList {
+		if metadata.Path == path {
+			return &metadata, nil
+		}
+	}
+
+	return nil, fmt.Errorf("metadata not found")
+}
+
 // ListMetadata lists all metadata, optionally filtered by prefix
 func (c *Client) ListMetadata(ctx context.Context, prefix string) ([]Metadata, error) {
 	endpoint := "/metadata"
