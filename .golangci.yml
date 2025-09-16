@@ -5,6 +5,7 @@ linters:
   enable:
     - copyloopvar
     - durationcheck
+    - errcheck
     - forcetypeassert
     - godot
     - ineffassign

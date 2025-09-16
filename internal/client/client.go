@@ -136,7 +136,7 @@ func (c *Client) CreateProject(ctx context.Context, req CreateProjectRequest) (*
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
@@ -156,7 +156,7 @@ func (c *Client) GetProject(ctx context.Context, id string) (*Project, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, fmt.Errorf("project not found")
@@ -185,7 +185,7 @@ func (c *Client) ListProjects(ctx context.Context, nameFilter string) ([]Project
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
@@ -210,7 +210,7 @@ func (c *Client) UpdateProject(ctx context.Context, id string, req UpdateProject
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, fmt.Errorf("project not found")
@@ -234,7 +234,7 @@ func (c *Client) DeleteProject(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusNotFound {
 		return fmt.Errorf("project not found")
@@ -260,7 +260,7 @@ func (c *Client) CreateInstance(ctx context.Context, req CreateInstanceRequest) 
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
@@ -280,7 +280,7 @@ func (c *Client) GetInstance(ctx context.Context, id string) (*Instance, error) 
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, fmt.Errorf("instance not found")
@@ -321,7 +321,7 @@ func (c *Client) ListInstances(ctx context.Context, projectID, nameFilter, statu
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
@@ -346,7 +346,7 @@ func (c *Client) UpdateInstance(ctx context.Context, id string, req UpdateInstan
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, fmt.Errorf("instance not found")
@@ -370,7 +370,7 @@ func (c *Client) DeleteInstance(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusNotFound {
 		return fmt.Errorf("instance not found")
@@ -408,7 +408,7 @@ func (c *Client) CreateMetadata(ctx context.Context, req CreateMetadataRequest) 
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
@@ -428,7 +428,7 @@ func (c *Client) GetMetadata(ctx context.Context, id string) (*Metadata, error) 
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, fmt.Errorf("metadata not found")
@@ -475,7 +475,7 @@ func (c *Client) ListMetadata(ctx context.Context, prefix string) ([]Metadata, e
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
@@ -500,7 +500,7 @@ func (c *Client) UpdateMetadata(ctx context.Context, id string, req UpdateMetada
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, fmt.Errorf("metadata not found")
@@ -524,7 +524,7 @@ func (c *Client) DeleteMetadata(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusNotFound {
 		return fmt.Errorf("metadata not found")
