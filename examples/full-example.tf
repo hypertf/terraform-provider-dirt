@@ -83,7 +83,7 @@ resource "dirt_metadata" "feature_flags" {
 }
 
 resource "dirt_metadata" "monitoring_config" {
-  path  = "monitoring/instances"
+  path = "monitoring/instances"
   value = jsonencode({
     web_servers = [
       dirt_instance.web_server_1.id,
@@ -175,8 +175,8 @@ output "metadata_ids" {
   description = "IDs of created metadata entries"
   value = {
     database_connection = dirt_metadata.database_connection_string.id
-    app_version        = dirt_metadata.app_version.id
-    monitoring_config  = dirt_metadata.monitoring_config.id
-    feature_flags      = dirt_metadata.feature_flags.id
+    app_version         = dirt_metadata.app_version.id
+    monitoring_config   = dirt_metadata.monitoring_config.id
+    feature_flags       = dirt_metadata.feature_flags.id
   }
 }
