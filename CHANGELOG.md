@@ -1,3 +1,8 @@
+## 0.2.2 (September 17, 2025)
+
+BUG FIXES:
+* **ci**: Fixed release workflow to not require passphrase for GPG key import
+
 ## 0.2.1 (September 17, 2025)
 
 BUG FIXES:
