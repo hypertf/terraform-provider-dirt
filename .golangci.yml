@@ -20,11 +20,3 @@ linters:
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
-  exclude-dirs:
-    - examples
-    - test-published
-  exclude-rules:
-    - path: internal/client/client.go
-      linters:
-        - errcheck
-      text: "Error return value of `.*\\.Body\\.Close` is not checked"
