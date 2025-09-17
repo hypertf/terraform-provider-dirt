@@ -1,3 +1,9 @@
+## 0.3.1 (September 18, 2025)
+
+BUG FIXES:
+* **documentation**: Fixed provider name in documentation generation from "scaffolding" to "dirt"
+* **linting**: Added missing periods to Go comments for godot linter compliance
+
 ## 0.3.0 (September 18, 2025)
 
 FEATURES:
