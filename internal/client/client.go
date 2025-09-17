@@ -16,14 +16,14 @@ import (
 	"time"
 )
 
-// ErrorResponse represents an error response from the server
+// ErrorResponse represents an error response from the server.
 type ErrorResponse struct {
 	Error   string                 `json:"error"`
 	Message string                 `json:"message"`
 	Details map[string]interface{} `json:"details,omitempty"`
 }
 
-// parseErrorResponse parses error response body and returns a formatted error
+// parseErrorResponse parses error response body and returns a formatted error.
 func parseErrorResponse(resp *http.Response) error {
 	var errResp ErrorResponse
 	if err := json.NewDecoder(resp.Body).Decode(&errResp); err != nil {
