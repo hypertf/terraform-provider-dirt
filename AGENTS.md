@@ -28,6 +28,28 @@ make fmt
 make generate
 ```
 
+### Documentation Generation
+Documentation is automatically generated from provider schema and examples.
+
+**When to run `make generate`:**
+- After adding/modifying resources or data sources
+- After changing schema descriptions or examples
+- Before committing provider code changes
+- CI will fail if docs are out of sync
+
+**Documentation files:**
+- Generated in `docs/` directory
+- Based on schema from provider code
+- Examples pulled from `examples/` directory
+
+**Optional: Pre-commit hook to auto-generate docs:**
+```bash
+# Add to .git/hooks/pre-commit
+#!/bin/bash
+make generate
+git add docs/
+```
+
 ### Local Development Setup
 ```bash
 # Copy dev overrides for local testing
