@@ -1,3 +1,13 @@
+## 0.3.0 (September 18, 2025)
+
+FEATURES:
+* **instance resource**: Added immutable field support for `image` attribute - changing image now triggers destroy/recreate operation instead of in-place update
+
+ENHANCEMENTS:
+* **provider**: Enhanced error handling and validation for immutable field updates
+* **server**: Improved error messages for field validation with detailed current/requested values
+* **client**: Better parsing and display of server error responses
+
 ## 0.2.2 (September 17, 2025)
 
 BUG FIXES:

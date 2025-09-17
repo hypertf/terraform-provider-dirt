@@ -87,6 +87,9 @@ func (r *InstanceResource) Schema(ctx context.Context, req resource.SchemaReques
 				Optional:            true,
 				Computed:            true,
 				Default:             stringdefault.StaticString("ubuntu:20.04"),
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"status": schema.StringAttribute{
 				MarkdownDescription: "Instance status (running, stopped)",
@@ -211,7 +214,7 @@ func (r *InstanceResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	// Update the instance
+	// Update the instance - send all fields (server handles immutability)
 	updateReq := client.UpdateInstanceRequest{}
 
 	name := data.Name.ValueString()

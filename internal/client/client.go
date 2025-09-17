@@ -16,6 +16,27 @@ import (
 	"time"
 )
 
+// ErrorResponse represents an error response from the server
+type ErrorResponse struct {
+	Error   string                 `json:"error"`
+	Message string                 `json:"message"`
+	Details map[string]interface{} `json:"details,omitempty"`
+}
+
+// parseErrorResponse parses error response body and returns a formatted error
+func parseErrorResponse(resp *http.Response) error {
+	var errResp ErrorResponse
+	if err := json.NewDecoder(resp.Body).Decode(&errResp); err != nil {
+		return fmt.Errorf("HTTP %d: %s (failed to parse error response)", resp.StatusCode, resp.Status)
+	}
+	
+	if errResp.Message != "" {
+		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, errResp.Message)
+	}
+	
+	return fmt.Errorf("HTTP %d: %s", resp.StatusCode, resp.Status)
+}
+
 // Client represents the DirtCloud API client.
 type Client struct {
 	BaseURL    string
@@ -353,7 +374,7 @@ func (c *Client) UpdateInstance(ctx context.Context, id string, req UpdateInstan
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		return nil, parseErrorResponse(resp)
 	}
 
 	var instance Instance
