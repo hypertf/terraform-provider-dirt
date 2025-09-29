@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     dirt = {
-      source = "hashicorp/dirt"
+      source = "hypertf/dirt"
     }
   }
 }

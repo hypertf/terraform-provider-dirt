@@ -28,7 +28,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "registry.terraform.io/hashicorp/dirt",
+		Address: "registry.terraform.io/hypertf/dirt",
 		Debug:   debug,
 	}
 

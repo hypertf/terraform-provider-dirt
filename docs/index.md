@@ -15,7 +15,7 @@ DirtCloud is a fake local cloud provider for learning and testing Terraform. It 
 terraform {
   required_providers {
     dirt = {
-      source = "hashicorp/dirt"
+      source = "hypertf/dirt"
     }
   }
 }
