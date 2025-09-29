@@ -41,7 +41,7 @@ func (p *DirtProvider) Metadata(ctx context.Context, req provider.MetadataReques
 
 func (p *DirtProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "The DirtCloud provider allows you to manage DirtCloud resources including projects, instances, and metadata.",
+		MarkdownDescription: "DirtCloud is a fake local cloud provider for learning and testing Terraform. It does not provision any real infrastructure. Instead, it simulates resources (projects, instances, metadata) and is paired with a local console that looks and behaves like a real cloud so you can practice Terraform workflows safely.",
 		Attributes: map[string]schema.Attribute{
 			"endpoint": schema.StringAttribute{
 				MarkdownDescription: "The DirtCloud API endpoint. Defaults to http://localhost:8080/v1. Can also be set via the DIRT_ENDPOINT environment variable.",

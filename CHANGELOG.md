@@ -1,3 +1,9 @@
+## 0.3.2 (September 29, 2025)
+
+ENHANCEMENTS:
+* **docs**: Clarified provider purpose as a fake local cloud for Terraform learning and tooling development
+* **README**: Added detailed use cases, quick start, and comparison with `null_resource`
+
 ## 0.3.1 (September 18, 2025)
 
 BUG FIXES:

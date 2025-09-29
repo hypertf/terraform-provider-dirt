@@ -1,64 +1,117 @@
-# Terraform Provider Scaffolding (Terraform Plugin Framework)
+# Terraform Provider: DirtCloud (Fake Local Cloud)
 
-_This template repository is built on the [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework). The template repository built on the [Terraform Plugin SDK](https://github.com/hashicorp/terraform-plugin-sdk) can be found at [terraform-provider-scaffolding](https://github.com/hashicorp/terraform-provider-scaffolding). See [Which SDK Should I Use?](https://developer.hashicorp.com/terraform/plugin/framework-benefits) in the Terraform documentation for additional information._
+DirtCloud is a fake local cloud provider for learning and testing Terraform. It does not provision any real infrastructure. Instead, it simulates resources (projects, instances, metadata) and is paired with a local console that looks and behaves like a real cloud so you can practice Terraform workflows safely.
 
-This repository is a *template* for a [Terraform](https://www.terraform.io) provider. It is intended as a starting point for creating Terraform providers, containing:
+- Ideal for: learning Terraform, demos, workshops, CI validation, and module development without touching real infrastructure.
+- Safety: zero cost, zero side‑effects. Everything is local and disposable.
 
-- A resource and a data source (`internal/provider/`),
-- Examples (`examples/`) and generated documentation (`docs/`),
-- Miscellaneous meta files.
+See the generated provider docs in [`docs/index.md`](file:///Users/nicolas/terraform-provider-dirt/docs/index.md#L1-L40).
 
-These files contain boilerplate code that you will need to edit to create your own Terraform provider. Tutorials for creating Terraform providers can be found on the [HashiCorp Developer](https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework) platform. _Terraform Plugin Framework specific guides are titled accordingly._
+## Quick Start
 
-Please see the [GitHub template repository documentation](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) for how to create a new repository from this template on GitHub.
+1. Start a local DirtCloud API:
+   - Option A: Run the mock API included here:
+     ```bash
+     ./mock-server.py
+     # Serves on http://localhost:8080
+     ```
+   - Option B: Run the full server (if you have it): `~/dirtcloud-server` (listens on `http://localhost:8080/v1`).
 
-Once you've written your provider, you'll want to [publish it on the Terraform Registry](https://developer.hashicorp.com/terraform/registry/providers/publishing) so that others can use it.
+2. Use the provider in Terraform:
+   ```hcl
+   terraform {
+     required_providers {
+       dirt = {
+         source = "hashicorp/dirt"
+       }
+     }
+   }
 
-## Requirements
+   provider "dirt" {
+     endpoint = "http://localhost:8080/v1" # defaults to this
+     # token   = var.dirt_token            # optional
+   }
+   
+   # Example simulated resources and data sources
+   resource "dirt_project" "demo" {
+     name = "demo-project"
+   }
 
-- [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.0
-- [Go](https://golang.org/doc/install) >= 1.23
+   data "dirt_metadata" "feature_flag" {
+     path = "app/features/new_ui_enabled"
+   }
+   ```
 
-## Building The Provider
+3. Plan/apply like normal. The provider pretends to create resources and exposes them via the API/console, but nothing real is provisioned.
 
-1. Clone the repository
-1. Enter the repository directory
-1. Build the provider using the Go `install` command:
+Explore more examples in [`examples/`](file:///Users/nicolas/terraform-provider-dirt/examples#L1).
 
-```shell
-go install
-```
+## What This Is (and Isn’t)
 
-## Adding Dependencies
+- What it is:
+  - A safe sandbox to practice Terraform workflows end‑to‑end (init/plan/apply/destroy, state, data sources, drift, etc.).
+  - A teaching and demo tool with a console UI that looks like a real cloud.
 
-This provider uses [Go modules](https://github.com/golang/go/wiki/Modules).
-Please see the Go documentation for the most up to date information about using Go modules.
+- What it isn’t:
+  - A real cloud provider. No real infra is created.
+  - A drop‑in replacement for production providers.
 
-To add a new dependency `github.com/author/dependency` to your Terraform provider:
+## Use Cases
 
-```shell
-go get github.com/author/dependency
-go mod tidy
-```
+- Terraform tooling development
+  - Build/test CLIs, wrappers, and orchestrators that drive `terraform init/plan/apply/destroy` without risking real infrastructure.
+  - Exercise graph construction, parallelism, locks, refresh, and dependency handling against simulated CRUD resources.
+- Module development and CI
+  - Validate module variable validation, `for_each`/`count` expansions, and outputs with stable fake resources.
+  - Run fast “acceptance-like” tests in CI with no cloud credentials or costs.
+- Lifecycle and diff behavior
+  - Practice `create_before_destroy`, `prevent_destroy`, `ignore_changes`, and `replace_triggered_by` using resources that behave like real ones.
+  - Verify ForceNew semantics, unknowns during planning, computed + sensitive attributes, and custom diff edge cases.
+- Drift, import, and state operations
+  - Reproduce drift via the console/API, then test `terraform plan` detection and remediation.
+  - Exercise `terraform import`, `state mv`, `state rm`, `taint`/`untaint`, and targeted plans.
+- Error handling and retries (with mock server tweaks)
+  - Introduce delays, 4xx/5xx responses, or pagination quirks in the mock API to test retry/backoff and user messaging.
+  - Simulate eventual consistency and long-running operations to validate timeouts and `-parallel` behaviors.
+- Data source graphing
+  - Model data lookups that gate resource creation and verify ordering and dependency propagation.
 
-Then commit the changes to `go.mod` and `go.sum`.
+Compared to `null_resource`
+- `null_resource` doesn’t emulate provider CRUD, read-after-write, or server-side state, which limits testing of realistic behaviors.
+- Dirt simulates real API interactions, IDs, and read paths, enabling more representative end-to-end workflows.
 
-## Using the provider
+## Configuration
 
-Fill this in for each provider
+- `endpoint` (string): DirtCloud API endpoint. Defaults to `http://localhost:8080/v1`. Can also be set via `DIRT_ENDPOINT`.
+- `token` (string, sensitive): Optional auth token. Can also be set via `DIRT_TOKEN`.
 
-## Developing the Provider
+See the full schema in the provider docs: [`docs/index.md`](file:///Users/nicolas/terraform-provider-dirt/docs/index.md#L34-L40).
 
-If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (see [Requirements](#requirements) above).
+## Development
 
-To compile the provider, run `go install`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
+- Build:
+  ```bash
+  make build
+  ```
+- Test:
+  ```bash
+  make test
+  ```
+- Lint/Format:
+  ```bash
+  make lint
+  make fmt
+  ```
+- Generate docs (required after schema/example changes):
+  ```bash
+  make generate
+  ```
 
-To generate or update documentation, run `make generate`.
+Local server notes:
+- The provider expects a DirtCloud API at `http://localhost:8080/v1`.
+- A minimal mock server is provided at [`mock-server.py`](file:///Users/nicolas/terraform-provider-dirt/mock-server.py#L1-L110).
 
-In order to run the full suite of Acceptance tests, run `make testacc`.
+## License
 
-*Note:* Acceptance tests create real resources, and often cost money to run.
+MPL-2.0
 
-```shell
-make testacc
-```
