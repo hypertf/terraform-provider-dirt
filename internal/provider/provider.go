@@ -96,6 +96,8 @@ func (p *DirtProvider) Resources(ctx context.Context) []func() resource.Resource
 		NewProjectResource,
 		NewInstanceResource,
 		NewMetadataResource,
+		NewBucketResource,
+		NewObjectResource,
 	}
 }
 

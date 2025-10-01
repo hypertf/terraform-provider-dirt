@@ -120,6 +120,47 @@ type Metadata struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// Bucket represents a DirtCloud bucket.
+type Bucket struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// CreateBucketRequest represents the request body for creating a bucket.
+type CreateBucketRequest struct {
+	Name string `json:"name"`
+}
+
+// UpdateBucketRequest represents the request body for updating a bucket.
+type UpdateBucketRequest struct {
+	Name string `json:"name"`
+}
+
+// Object represents a DirtCloud object stored in a bucket. Content is base64-encoded.
+type Object struct {
+	ID        string    `json:"id"`
+	BucketID  string    `json:"bucket_id"`
+	Path      string    `json:"path"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// CreateObjectRequest represents the request body for creating an object.
+type CreateObjectRequest struct {
+	BucketID string `json:"bucket_id,omitempty"`
+	Path     string `json:"path"`
+	Content  string `json:"content"`
+}
+
+// UpdateObjectRequest represents the request body for updating an object.
+type UpdateObjectRequest struct {
+	Path    *string `json:"path,omitempty"`
+	Content *string `json:"content,omitempty"`
+}
+
 // doRequest performs an HTTP request with proper authentication.
 func (c *Client) doRequest(ctx context.Context, method, endpoint string, body io.Reader) (*http.Response, error) {
 	fullURL := c.BaseURL + endpoint
@@ -142,6 +183,210 @@ func (c *Client) doRequest(ctx context.Context, method, endpoint string, body io
 	}
 
 	return resp, nil
+}
+
+// Buckets API
+
+// CreateBucket creates a new bucket.
+func (c *Client) CreateBucket(ctx context.Context, req CreateBucketRequest) (*Bucket, error) {
+	body, err := json.Marshal(req)
+	if err != nil {
+		return nil, fmt.Errorf("marshaling request: %w", err)
+	}
+
+	resp, err := c.doRequest(ctx, "POST", "/buckets", bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusCreated {
+		return nil, parseErrorResponse(resp)
+	}
+
+	var bucket Bucket
+	if err := json.NewDecoder(resp.Body).Decode(&bucket); err != nil {
+		return nil, fmt.Errorf("decoding response: %w", err)
+	}
+
+	return &bucket, nil
+}
+
+// GetBucket retrieves a bucket by ID.
+func (c *Client) GetBucket(ctx context.Context, id string) (*Bucket, error) {
+	resp, err := c.doRequest(ctx, "GET", "/buckets/"+id, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, fmt.Errorf("bucket not found")
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, parseErrorResponse(resp)
+	}
+
+	var bucket Bucket
+	if err := json.NewDecoder(resp.Body).Decode(&bucket); err != nil {
+		return nil, fmt.Errorf("decoding response: %w", err)
+	}
+
+	return &bucket, nil
+}
+
+// UpdateBucket updates a bucket by ID.
+func (c *Client) UpdateBucket(ctx context.Context, id string, req UpdateBucketRequest) (*Bucket, error) {
+	body, err := json.Marshal(req)
+	if err != nil {
+		return nil, fmt.Errorf("marshaling request: %w", err)
+	}
+
+	resp, err := c.doRequest(ctx, "PATCH", "/buckets/"+id, bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, fmt.Errorf("bucket not found")
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, parseErrorResponse(resp)
+	}
+
+	var bucket Bucket
+	if err := json.NewDecoder(resp.Body).Decode(&bucket); err != nil {
+		return nil, fmt.Errorf("decoding response: %w", err)
+	}
+
+	return &bucket, nil
+}
+
+// DeleteBucket deletes a bucket by ID.
+func (c *Client) DeleteBucket(ctx context.Context, id string) error {
+	resp, err := c.doRequest(ctx, "DELETE", "/buckets/"+id, nil)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return fmt.Errorf("bucket not found")
+	}
+
+	if resp.StatusCode != http.StatusNoContent {
+		return parseErrorResponse(resp)
+	}
+
+	return nil
+}
+
+// Objects API (scoped under a bucket)
+
+// CreateObject creates a new object within the specified bucket.
+func (c *Client) CreateObject(ctx context.Context, bucketID string, req CreateObjectRequest) (*Object, error) {
+	// Ensure bucket_id in body matches path (server accepts either)
+	req.BucketID = bucketID
+	body, err := json.Marshal(req)
+	if err != nil {
+		return nil, fmt.Errorf("marshaling request: %w", err)
+	}
+
+	endpoint := "/bucket/" + url.PathEscape(bucketID) + "/objects"
+	resp, err := c.doRequest(ctx, "POST", endpoint, bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusCreated {
+		return nil, parseErrorResponse(resp)
+	}
+
+	var obj Object
+	if err := json.NewDecoder(resp.Body).Decode(&obj); err != nil {
+		return nil, fmt.Errorf("decoding response: %w", err)
+	}
+
+	return &obj, nil
+}
+
+// GetObject retrieves an object by ID within a bucket.
+func (c *Client) GetObject(ctx context.Context, bucketID, objectID string) (*Object, error) {
+	endpoint := "/bucket/" + url.PathEscape(bucketID) + "/objects/" + url.PathEscape(objectID)
+	resp, err := c.doRequest(ctx, "GET", endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, fmt.Errorf("object not found")
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, parseErrorResponse(resp)
+	}
+
+	var obj Object
+	if err := json.NewDecoder(resp.Body).Decode(&obj); err != nil {
+		return nil, fmt.Errorf("decoding response: %w", err)
+	}
+
+	return &obj, nil
+}
+
+// UpdateObject updates an object within a bucket.
+func (c *Client) UpdateObject(ctx context.Context, bucketID, objectID string, req UpdateObjectRequest) (*Object, error) {
+	body, err := json.Marshal(req)
+	if err != nil {
+		return nil, fmt.Errorf("marshaling request: %w", err)
+	}
+
+	endpoint := "/bucket/" + url.PathEscape(bucketID) + "/objects/" + url.PathEscape(objectID)
+	resp, err := c.doRequest(ctx, "PATCH", endpoint, bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, fmt.Errorf("object not found")
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, parseErrorResponse(resp)
+	}
+
+	var obj Object
+	if err := json.NewDecoder(resp.Body).Decode(&obj); err != nil {
+		return nil, fmt.Errorf("decoding response: %w", err)
+	}
+
+	return &obj, nil
+}
+
+// DeleteObject deletes an object within a bucket.
+func (c *Client) DeleteObject(ctx context.Context, bucketID, objectID string) error {
+	endpoint := "/bucket/" + url.PathEscape(bucketID) + "/objects/" + url.PathEscape(objectID)
+	resp, err := c.doRequest(ctx, "DELETE", endpoint, nil)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return fmt.Errorf("object not found")
+	}
+
+	if resp.StatusCode != http.StatusNoContent {
+		return parseErrorResponse(resp)
+	}
+
+	return nil
 }
 
 // Projects API
