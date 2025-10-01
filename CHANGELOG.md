@@ -1,3 +1,13 @@
+## 0.4.0 (October 02, 2025)
+
+FEATURES:
+* **dirt_bucket resource**: Manage buckets with create/read/update/delete and import
+* **dirt_object resource**: Manage bucket-scoped objects, base64 content handling, and import `{bucket_id}/{object_id}`
+
+ENHANCEMENTS:
+* **client**: Added Bucket and Object APIs (CRUD), nested object endpoints under `/v1/bucket/{bucket_id}/objects`
+* **docs/examples**: Generated docs and added usage examples for new resources
+
 ## 0.3.2 (September 29, 2025)
 
 ENHANCEMENTS:
