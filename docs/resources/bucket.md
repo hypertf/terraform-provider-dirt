@@ -25,6 +25,10 @@ resource "dirt_bucket" "images" {
 
 - `name` (String) Bucket name (unique, max 255, /^[a-zA-Z0-9_-]+$/)
 
+### Optional
+
+- `force_destroy` (Boolean) When true (default), bucket is deleted even if non-empty (server cascades). When false, deletion fails if bucket contains objects.
+
 ### Read-Only
 
 - `created_at` (String) Bucket creation timestamp

@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -30,10 +31,11 @@ type BucketResource struct {
 
 // BucketResourceModel describes the resource data model.
 type BucketResourceModel struct {
-	ID        types.String `tfsdk:"id"`
-	Name      types.String `tfsdk:"name"`
-	CreatedAt types.String `tfsdk:"created_at"`
-	UpdatedAt types.String `tfsdk:"updated_at"`
+	ID           types.String `tfsdk:"id"`
+	Name         types.String `tfsdk:"name"`
+	ForceDestroy types.Bool   `tfsdk:"force_destroy"`
+	CreatedAt    types.String `tfsdk:"created_at"`
+	UpdatedAt    types.String `tfsdk:"updated_at"`
 }
 
 func (r *BucketResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -55,6 +57,12 @@ func (r *BucketResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			"name": schema.StringAttribute{
 				MarkdownDescription: "Bucket name (unique, max 255, /^[a-zA-Z0-9_-]+$/)",
 				Required:            true,
+			},
+			"force_destroy": schema.BoolAttribute{
+				MarkdownDescription: "When true (default), bucket is deleted even if non-empty (server cascades). When false, deletion fails if bucket contains objects.",
+				Optional:            true,
+				Computed:            true,
+				Default:             booldefault.StaticBool(true),
 			},
 			"created_at": schema.StringAttribute{
 				Computed:            true,
@@ -111,6 +119,8 @@ func (r *BucketResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	data.ID = types.StringValue(bucket.ID)
 	data.Name = types.StringValue(bucket.Name)
+	// Preserve planned force_destroy (has default true if unspecified)
+	// data.ForceDestroy already populated from plan.
 	data.CreatedAt = types.StringValue(bucket.CreatedAt.Format("2006-01-02T15:04:05Z07:00"))
 	data.UpdatedAt = types.StringValue(bucket.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"))
 
@@ -168,6 +178,22 @@ func (r *BucketResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...) 
 	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	// If force_destroy is false, ensure bucket is empty before deleting
+	if !data.ForceDestroy.IsNull() && !data.ForceDestroy.IsUnknown() && !data.ForceDestroy.ValueBool() {
+		objects, err := r.client.ListObjects(ctx, data.ID.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to list bucket objects before delete, got error: %s", err))
+			return
+		}
+		if len(objects) > 0 {
+			resp.Diagnostics.AddError(
+				"Bucket not empty",
+				fmt.Sprintf("Bucket %s contains %d object(s). Set force_destroy=true to delete non-empty buckets.", data.Name.ValueString(), len(objects)),
+			)
+			return
+		}
 	}
 
 	if err := r.client.DeleteBucket(ctx, data.ID.ValueString()); err != nil {

@@ -1,3 +1,10 @@
+## 0.4.1 (October 05, 2025)
+
+ENHANCEMENTS:
+* **dirt_bucket resource**: Added `force_destroy` attribute (default `true`). When `false`, provider blocks deletion if the bucket is non-empty; when `true` or default, deletion proceeds and server cascades.
+* **client**: Added `ListObjects(bucketID)` to support non-empty checks prior to deletion.
+* **docs**: Regenerated docs; bucket resource includes `force_destroy`.
+
 ## 0.4.0 (October 02, 2025)
 
 FEATURES:

@@ -314,6 +314,27 @@ func (c *Client) CreateObject(ctx context.Context, bucketID string, req CreateOb
 	return &obj, nil
 }
 
+// ListObjects lists objects within the specified bucket.
+func (c *Client) ListObjects(ctx context.Context, bucketID string) ([]Object, error) {
+	endpoint := "/bucket/" + url.PathEscape(bucketID) + "/objects"
+	resp, err := c.doRequest(ctx, "GET", endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, parseErrorResponse(resp)
+	}
+
+	var objs []Object
+	if err := json.NewDecoder(resp.Body).Decode(&objs); err != nil {
+		return nil, fmt.Errorf("decoding response: %w", err)
+	}
+
+	return objs, nil
+}
+
 // GetObject retrieves an object by ID within a bucket.
 func (c *Client) GetObject(ctx context.Context, bucketID, objectID string) (*Object, error) {
 	endpoint := "/bucket/" + url.PathEscape(bucketID) + "/objects/" + url.PathEscape(objectID)
