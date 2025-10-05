@@ -1,3 +1,8 @@
+## 0.4.3 (October 05, 2025)
+
+ENHANCEMENTS:
+* **build/docs**: Regenerated headers via `make generate` to satisfy CI.
+
 ## 0.4.2 (October 05, 2025)
 
 BUG FIXES:
