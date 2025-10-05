@@ -136,6 +136,11 @@ func (r *BucketResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	bucket, err := r.client.GetBucket(ctx, data.ID.ValueString())
 	if err != nil {
+		if isNotFound(err) {
+			// Resource no longer exists remotely; remove from state without error.
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read bucket, got error: %s", err))
 		return
 	}
@@ -197,6 +202,10 @@ func (r *BucketResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 
 	if err := r.client.DeleteBucket(ctx, data.ID.ValueString()); err != nil {
+		if isNotFound(err) {
+			// Already gone; consider delete successful (idempotent)
+			return
+		}
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete bucket, got error: %s", err))
 		return
 	}

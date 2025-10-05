@@ -151,6 +151,11 @@ func (r *ObjectResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	obj, err := r.client.GetObject(ctx, data.BucketID.ValueString(), data.ID.ValueString())
 	if err != nil {
+		if isNotFound(err) {
+			// Object missing remotely; remove from state to trigger recreation
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read object, got error: %s", err))
 		return
 	}
@@ -206,6 +211,10 @@ func (r *ObjectResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 
 	if err := r.client.DeleteObject(ctx, data.BucketID.ValueString(), data.ID.ValueString()); err != nil {
+		if isNotFound(err) {
+			// Already deleted; success
+			return
+		}
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete object, got error: %s", err))
 		return
 	}

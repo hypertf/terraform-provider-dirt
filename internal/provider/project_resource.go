@@ -135,6 +135,11 @@ func (r *ProjectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	// Get the project from the API
 	project, err := r.client.GetProject(ctx, data.ID.ValueString())
 	if err != nil {
+		if isNotFound(err) {
+			// Missing remotely; remove from state to plan recreation
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read project, got error: %s", err))
 		return
 	}
@@ -190,6 +195,10 @@ func (r *ProjectResource) Delete(ctx context.Context, req resource.DeleteRequest
 	// Delete the project
 	err := r.client.DeleteProject(ctx, data.ID.ValueString())
 	if err != nil {
+		if isNotFound(err) {
+			// Already gone; success
+			return
+		}
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete project, got error: %s", err))
 		return
 	}

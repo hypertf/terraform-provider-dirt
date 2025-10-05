@@ -142,6 +142,11 @@ func (r *MetadataResource) Read(ctx context.Context, req resource.ReadRequest, r
 	// Get the metadata from the API
 	metadata, err := r.client.GetMetadata(ctx, data.ID.ValueString())
 	if err != nil {
+		if isNotFound(err) {
+			// Resource missing remotely; remove from state so Terraform can recreate.
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read metadata, got error: %s", err))
 		return
 	}
@@ -203,6 +208,10 @@ func (r *MetadataResource) Delete(ctx context.Context, req resource.DeleteReques
 	// Delete the metadata
 	err := r.client.DeleteMetadata(ctx, data.ID.ValueString())
 	if err != nil {
+		if isNotFound(err) {
+			// Already gone; deletion is idempotent
+			return
+		}
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete metadata, got error: %s", err))
 		return
 	}

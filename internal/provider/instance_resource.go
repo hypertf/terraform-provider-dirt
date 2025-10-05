@@ -186,6 +186,11 @@ func (r *InstanceResource) Read(ctx context.Context, req resource.ReadRequest, r
 	// Get the instance from the API
 	instance, err := r.client.GetInstance(ctx, data.ID.ValueString())
 	if err != nil {
+		if isNotFound(err) {
+			// Resource missing remotely; remove from state to plan recreation.
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read instance, got error: %s", err))
 		return
 	}
@@ -263,6 +268,10 @@ func (r *InstanceResource) Delete(ctx context.Context, req resource.DeleteReques
 	// Delete the instance
 	err := r.client.DeleteInstance(ctx, data.ID.ValueString())
 	if err != nil {
+		if isNotFound(err) {
+			// Already deleted; treat as success
+			return
+		}
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete instance, got error: %s", err))
 		return
 	}

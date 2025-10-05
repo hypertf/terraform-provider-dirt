@@ -1,3 +1,8 @@
+## 0.4.2 (October 05, 2025)
+
+BUG FIXES:
+* **provider (all managed resources)**: Treat NotFound at Read as resource removed and clear state instead of erroring; treat NotFound at Delete as success. Aligns with AWS/GCP behavior to avoid failing plan when remote objects are missing.
+
 ## 0.4.1 (October 05, 2025)
 
 ENHANCEMENTS:
